@@ -40,6 +40,8 @@ services:
       REDIS_URL: redis://redis:6379/0
       DATA_DIR: /workspace/data
       REPORTS_DIR: /workspace/reports
+      RERANKER_ENABLED: "false"
+      LLM_TIMEOUT_SECONDS: "5"
     volumes:
       - ./data:/workspace/data
       - ./reports:/workspace/reports

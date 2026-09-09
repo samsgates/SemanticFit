@@ -144,7 +144,8 @@ class SearchService:
             rows = filtered_rows
 
         t = time.perf_counter()
-        rerank_rows = rows[: settings.reranker_top_n]
+        rerank_enabled = settings.reranker_enabled and settings.embedding_backend != "hash"
+        rerank_rows = rows[: settings.reranker_top_n] if rerank_enabled else []
         scores = self.reranker.score(intent.semantic_query, [r["product"].search_document for r in rerank_rows])
         for row, score in zip(rerank_rows, scores):
             row["reranker_score"] = score

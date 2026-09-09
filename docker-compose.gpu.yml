@@ -10,3 +10,4 @@ services:
     environment:
       EMBEDDING_DEVICE: cuda
       EMBEDDING_USE_FP16: "true"
+      RERANKER_ENABLED: "true"

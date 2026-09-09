@@ -105,6 +105,7 @@ def resume(
     job_id: str,
     batch_size: int = typer.Option(128, min=1, max=2048),
     checkpoint_every: int = typer.Option(1000, min=100),
+    max_records: int | None = typer.Option(None, min=1, help="Process at most this many additional source records, then pause."),
 ):
     """Resume a paused/failed job from the last committed byte offset."""
     flask_app = _ensure_app()
@@ -116,8 +117,10 @@ def resume(
         path = Path(job.filename)
     with Live(_status_table({"job_id": job_id, "status": "resuming"}), console=console, refresh_per_second=4) as live:
         pipeline = IngestionPipeline(flask_app, lambda payload: live.update(_status_table(payload)))
-        pipeline.ingest(path, batch_size=batch_size, checkpoint_every=checkpoint_every, resume_job_id=job_id)
-    console.print(f"[bold green]Completed[/bold green] job {job_id}")
+        pipeline.ingest(path, batch_size=batch_size, checkpoint_every=checkpoint_every, resume_job_id=job_id, max_records=max_records)
+    with flask_app.app_context():
+        final_status = db.session.get(IngestionJob, job_id).status
+    console.print(f"[bold green]{final_status.title()}[/bold green] job {job_id}")
 
 
 @app.command()

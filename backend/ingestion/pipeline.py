@@ -176,6 +176,7 @@ class IngestionPipeline:
         batch_size: int = 128,
         checkpoint_every: int = 1000,
         resume_job_id: str | None = None,
+        max_records: int | None = None,
     ) -> str:
         path = path.resolve()
         self.progress({"stage": "1/6 Validate source", "status": "starting", "processed": 0})
@@ -233,6 +234,7 @@ class IngestionPipeline:
             batch_last_offset = job.current_offset
             batch_last_line = job.current_line
             checkpoint_counter = 0
+            limit_reached = False
 
             try:
                 with open_stream(path) as fh, error_path.open("a", encoding="utf-8") as errors:
@@ -274,9 +276,21 @@ class IngestionPipeline:
                             checkpoint_counter = 0
                             self.progress(self._progress_payload(job))
 
+                        if max_records is not None and processed_count - start_processed >= max_records:
+                            limit_reached = True
+                            break
+
                     if batch:
                         self._flush_batch(batch)
                     self._checkpoint(job, warning_counts, category_counts, batch_last_offset, batch_last_line, started, start_processed, processed_count, success_count, failed_count, skipped_count)
+
+                if limit_reached:
+                    job.status = "paused"
+                    job.error = None
+                    db.session.commit()
+                    write_audit("INGESTION_PAUSED", actor_type="system", actor_id="semanticfit-ingest", metadata={"job_id": job.id, "reason": "record_limit", "max_records": max_records})
+                    self.progress(self._progress_payload(job))
+                    return job.id
 
                 self.progress({"stage": "6/6 Finalize report", "status": "finalizing", "job_id": job.id, "processed": job.processed})
                 job.status = "completed"

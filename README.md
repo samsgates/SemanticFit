@@ -4,6 +4,10 @@
 
 SemanticFit is an open-source reference implementation of a modern product recommendation microservice. It turns natural-language shopping requests such as **“I need something lightweight for a summer beach vacation under $100”** into ranked fashion recommendations without requiring an LLM to perform retrieval.
 
+## Demo
+
+[![Watch the SemanticFit demo on YouTube](https://img.youtube.com/vi/_QTA-RpD7bA/maxresdefault.jpg)](https://youtu.be/_QTA-RpD7bA)
+
 The default catalog source is the McAuley Lab **Amazon Reviews 2023** metadata file:
 
 - Dataset home: https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023
@@ -16,6 +20,8 @@ The default catalog source is the McAuley Lab **Amazon Reviews 2023** metadata f
 ## Why SemanticFit
 
 Traditional catalog search works well when a user knows the exact keyword. SemanticFit is designed for intent-oriented queries involving occasion, climate, style, material, rating, and budget.
+
+![SemanticFit workflow from natural-language search through retrieval, ranking, recommendations, and monitoring](media_resources/howitsworks.png)
 
 ```text
 Natural-language query
@@ -40,6 +46,8 @@ The LLM layer is optional. When disabled, the complete semantic search pipeline 
 ---
 
 ## Features
+
+![SemanticFit feature overview covering search, retrieval, ranking, ingestion, administration, evaluation, and feedback](media_resources/features.png)
 
 ### Public experience
 
@@ -104,6 +112,8 @@ The LLM layer is optional. When disabled, the complete semantic search pipeline 
 ---
 
 ## Architecture
+
+![SemanticFit high-level architecture across user interfaces, APIs, intelligence services, data stores, and offline pipelines](media_resources/highlevel_architect.png)
 
 ```mermaid
 flowchart TD
@@ -426,6 +436,8 @@ That text is encoded by BGE-M3. Structured values such as price and rating are r
 ---
 
 # Search pipeline
+
+![SemanticFit offline indexing and online retrieval pipeline](media_resources/rag_pipeline.png)
 
 ## 1. Intent processing
 
@@ -953,22 +965,7 @@ Live user feedback is noisy. SemanticFit stores feedback for analysis/evaluation
 
 ---
 
-# Roadmap
-
-- Review-aware ranking using `Amazon_Fashion.jsonl`
-- Collaborative filtering
-- Multimodal text + product image embeddings
-- Outfit composition mode
-- Bought-together graph expansion
-- Learning-to-rank from curated feedback
-- Admin conversion of negative feedback into evaluation cases
-- Prometheus/Grafana dashboard templates
-- Alembic migration workflow for long-lived deployments
-- Dedicated GPU model inference service
-- A/B test framework
-
----
-
+ 
 ## License
 
 Apache License 2.0. See [`LICENSE`](LICENSE).
