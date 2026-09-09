@@ -1,0 +1,30 @@
+{"id":"eval_001","query":"lightweight linen clothes for a summer beach vacation","expected_terms":["linen","lightweight","beach","summer"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_002","query":"something elegant for a summer wedding","expected_terms":["elegant","dress","summer","wedding"],"expected_categories":["dresses","clothing"],"constraints":{}}
+{"id":"eval_003","query":"comfortable clothes for a long flight","expected_terms":["comfortable","soft","relaxed"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_004","query":"smart casual outfit for a business dinner","expected_terms":["smart","casual","business"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_005","query":"warm layers for a winter trip","expected_terms":["warm","winter","fleece","wool"],"expected_categories":["clothing","outerwear"],"constraints":{}}
+{"id":"eval_006","query":"black formal dress under $100","expected_terms":["black","formal","dress"],"expected_categories":["dresses"],"constraints":{"max_price":100}}
+{"id":"eval_007","query":"running shorts under $50","expected_terms":["running","shorts","sport"],"expected_categories":["shorts"],"constraints":{"max_price":50}}
+{"id":"eval_008","query":"cotton t shirt with at least 4 star rating","expected_terms":["cotton","shirt"],"expected_categories":["shirts","tops"],"constraints":{"min_rating":4}}
+{"id":"eval_009","query":"casual shoes for walking around a city","expected_terms":["walking","casual","comfortable"],"expected_categories":["shoes"],"constraints":{}}
+{"id":"eval_010","query":"leather belt for a formal outfit","expected_terms":["leather","belt","formal"],"expected_categories":["belts","accessories"],"constraints":{}}
+{"id":"eval_011","query":"something breathable for very hot weather","expected_terms":["breathable","lightweight","hot"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_012","query":"cozy hoodie for cold evenings","expected_terms":["hoodie","warm","cozy"],"expected_categories":["hoodies","sweatshirts"],"constraints":{}}
+{"id":"eval_013","query":"navy business casual shirt","expected_terms":["navy","business","shirt"],"expected_categories":["shirts"],"constraints":{}}
+{"id":"eval_014","query":"women's white linen top","expected_terms":["white","linen","top"],"expected_categories":["tops"],"constraints":{}}
+{"id":"eval_015","query":"men's wool sweater for winter","expected_terms":["wool","sweater","winter"],"expected_categories":["sweaters"],"constraints":{}}
+{"id":"eval_016","query":"sporty clothes for the gym","expected_terms":["sport","gym","active"],"expected_categories":["activewear","clothing"],"constraints":{}}
+{"id":"eval_017","query":"minimal black backpack for work","expected_terms":["black","backpack","work"],"expected_categories":["backpacks","bags"],"constraints":{}}
+{"id":"eval_018","query":"summer sandals under $40","expected_terms":["summer","sandals"],"expected_categories":["sandals","shoes"],"constraints":{"max_price":40}}
+{"id":"eval_019","query":"rain jacket for travel","expected_terms":["rain","jacket","water"],"expected_categories":["jackets","outerwear"],"constraints":{}}
+{"id":"eval_020","query":"soft pajamas for sleeping","expected_terms":["soft","pajamas","sleep"],"expected_categories":["sleepwear"],"constraints":{}}
+{"id":"eval_021","query":"vintage style denim jacket","expected_terms":["vintage","denim","jacket"],"expected_categories":["jackets"],"constraints":{}}
+{"id":"eval_022","query":"red party dress","expected_terms":["red","party","dress"],"expected_categories":["dresses"],"constraints":{}}
+{"id":"eval_023","query":"comfortable socks for hiking","expected_terms":["comfortable","hiking","socks"],"expected_categories":["socks"],"constraints":{}}
+{"id":"eval_024","query":"formal shoes with at least 4.2 star rating","expected_terms":["formal","dress"],"expected_categories":["shoes"],"constraints":{"min_rating":4.2}}
+{"id":"eval_025","query":"beige relaxed pants for vacation","expected_terms":["beige","relaxed","pants","vacation"],"expected_categories":["pants"],"constraints":{}}
+{"id":"eval_026","query":"something stylish for a date night","expected_terms":["stylish","date"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_027","query":"warm gloves for snow weather","expected_terms":["warm","gloves","snow"],"expected_categories":["gloves","accessories"],"constraints":{}}
+{"id":"eval_028","query":"light casual clothes but no denim","expected_terms":["light","casual"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_029","query":"professional outfit for a job interview","expected_terms":["professional","formal","interview"],"expected_categories":["clothing"],"constraints":{}}
+{"id":"eval_030","query":"a complete casual beach outfit","expected_terms":["beach","casual","summer"],"expected_categories":["clothing","shoes","accessories"],"constraints":{}}

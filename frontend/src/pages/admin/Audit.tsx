@@ -1,0 +1,6 @@
+import { Download } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../lib/api'
+import { AdminLoading, AdminTitle } from './Dashboard'
+
+export default function Audit(){const q=useQuery({queryKey:['admin-audit'],queryFn:api.adminAudit});if(q.isLoading)return <AdminLoading/>;const rows=q.data?.logs||[];return <div><AdminTitle title="Audit logs" subtitle="Trace important search, ingestion, evaluation and administrator events."/><div className="admin-actions"><a className="secondary-button" href="/api/v1/admin/audit/export?format=csv"><Download size={16}/> Export CSV</a><a className="secondary-button" href="/api/v1/admin/audit/export?format=json"><Download size={16}/> Export JSON</a></div><section className="admin-panel"><div className="table-scroll"><table className="data-table"><thead><tr><th>Time</th><th>Event</th><th>Actor</th><th>Status</th><th>Request</th><th>Metadata</th></tr></thead><tbody>{rows.map((x:any)=><tr key={x.id}><td>{new Date(x.created_at).toLocaleString()}</td><td><strong>{x.event_type}</strong></td><td>{x.actor_id||x.actor_type}</td><td><span className={`status-pill ${x.status==='success'?'ok':'bad'}`}>{x.status}</span></td><td className="mono">{x.request_id||'—'}</td><td><code className="metadata-code">{JSON.stringify(x.metadata||{})}</code></td></tr>)}</tbody></table></div></section></div>}

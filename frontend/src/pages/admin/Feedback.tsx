@@ -1,0 +1,6 @@
+import { MessageSquareText } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../lib/api'
+import { AdminLoading, AdminTitle } from './Dashboard'
+
+export default function FeedbackPage(){const q=useQuery({queryKey:['admin-feedback'],queryFn:api.adminFeedback});if(q.isLoading)return <AdminLoading/>;const data=q.data||{};const summary=Object.entries(data.summary||{});return <div><AdminTitle title="Feedback loop" subtitle="Optional explicit and implicit signals for offline ranking improvement."/><div className="feedback-summary">{summary.map(([k,v])=><div className="stat-card" key={k}><div className="stat-icon"><MessageSquareText size={18}/></div><div><span>{k.replaceAll('_',' ')}</span><strong>{String(v)}</strong></div></div>)}</div><section className="admin-panel"><div className="table-scroll"><table className="data-table"><thead><tr><th>Time</th><th>Type</th><th>Reason</th><th>Product</th><th>Request</th></tr></thead><tbody>{(data.feedback||[]).map((x:any)=><tr key={x.id}><td>{new Date(x.created_at).toLocaleString()}</td><td><span className="status-pill ok">{x.feedback_type}</span></td><td>{x.feedback_reason||'—'}</td><td className="mono">{x.product_id||'search-level'}</td><td className="mono">{x.request_id}</td></tr>)}</tbody></table></div></section></div>}

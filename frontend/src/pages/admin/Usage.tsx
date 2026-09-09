@@ -1,0 +1,5 @@
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../lib/api'
+import { AdminLoading, AdminTitle } from './Dashboard'
+
+export default function Usage(){const q=useQuery({queryKey:['admin-usage'],queryFn:api.adminUsage});if(q.isLoading)return <AdminLoading/>;const rows=q.data?.events||[];return <div><AdminTitle title="Search usage" subtitle="Anonymous query activity, latency, filters and result coverage."/><section className="admin-panel"><div className="table-scroll"><table className="data-table"><thead><tr><th>Time</th><th>Query</th><th>Results</th><th>Latency</th><th>Cache</th><th>LLM</th></tr></thead><tbody>{rows.map((x:any)=><tr key={x.request_id}><td>{new Date(x.created_at).toLocaleString()}</td><td><strong>{x.query}</strong><small>{Object.entries(x.filters||{}).map(([k,v])=>`${k}: ${v}`).join(' · ')}</small></td><td>{x.result_count}</td><td>{Number(x.latency_ms).toFixed(0)} ms</td><td><span className={`status-pill ${x.cache_hit?'ok':''}`}>{x.cache_hit?'hit':'miss'}</span></td><td>{x.llm_used?'yes':'no'}</td></tr>)}</tbody></table></div>{!rows.length&&<div className="table-empty">No search usage recorded yet.</div>}</section></div>}

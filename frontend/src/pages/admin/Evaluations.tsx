@@ -1,0 +1,6 @@
+import { CheckCircle2, Clock3 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../../lib/api'
+import { AdminLoading, AdminTitle } from './Dashboard'
+
+export default function Evaluations(){const q=useQuery({queryKey:['admin-evals'],queryFn:api.adminEvaluations});if(q.isLoading)return <AdminLoading/>;const runs=q.data?.runs||[];return <div><AdminTitle title="Evaluations" subtitle="Quality, constraint satisfaction, diversity and latency reports from the evaluation CLI."/><div className="eval-grid">{runs.map((run:any)=><article className="eval-card" key={run.id}><div className="eval-card-top"><span className={`status-pill ${run.status==='completed'?'ok':''}`}>{run.status}</span><Clock3 size={16}/></div><h2>{run.run_name}</h2><p>{run.model_version}</p><div className="metric-mini-grid">{Object.entries(run.metrics||{}).filter(([,v])=>typeof v==='number').slice(0,6).map(([k,v])=><div key={k}><span>{k.replaceAll('_',' ')}</span><strong>{typeof v==='number'?Number(v).toFixed(k.includes('latency')?1:3):String(v)}</strong></div>)}</div><footer><CheckCircle2 size={16}/>{run.completed_at?new Date(run.completed_at).toLocaleString():'Running'}</footer></article>)}{!runs.length&&<div className="admin-panel table-empty">No evaluation runs yet. Run <code>semanticfit-eval run</code> after ingestion.</div>}</div></div>}
