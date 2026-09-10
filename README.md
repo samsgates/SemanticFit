@@ -193,6 +193,7 @@ Services:
 |---|---|
 | Web UI | http://localhost:3000 |
 | Flask API | http://localhost:5000 |
+| Swagger API docs | http://localhost:5000/api/docs |
 | Qdrant | http://localhost:6333 |
 | Prometheus metrics | http://localhost:5000/metrics |
 | Admin UI | http://localhost:3000/admin |
@@ -518,100 +519,11 @@ The Amazon metadata file is already parent-ASIN-centric. SemanticFit therefore d
 
 ---
 
-# Public API
+# API documentation
 
-## Health
-
-```bash
-curl http://localhost:5000/api/v1/health
-```
-
-## Readiness
-
-Readiness checks the local model stack and Qdrant. The first call may trigger model loading/download:
-
-```bash
-curl http://localhost:5000/api/v1/ready
-```
-
-## Recommendations
-
-```bash
-curl -X POST http://localhost:5000/api/v1/recommendations \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "query": "I need a black formal dress for a summer wedding under $120",
-    "limit": 8,
-    "filters": {
-      "min_rating": 4.0
-    }
-  }'
-```
-
-Example response shape:
-
-```json
-{
-  "request_id": "req_...",
-  "query": "...",
-  "intent": {
-    "occasion": ["wedding"],
-    "season": ["summer"],
-    "style": ["formal"],
-    "colors": ["black"],
-    "max_price": 120
-  },
-  "results": [
-    {
-      "product_id": "...",
-      "title": "...",
-      "price": 84.99,
-      "rating": 4.6,
-      "match_percent": 91,
-      "reason": "...",
-      "score_breakdown": {
-        "reranker": 0.96,
-        "semantic": 0.82,
-        "quality": 0.91,
-        "popularity": 0.68,
-        "intent_alignment": 1.0
-      }
-    }
-  ],
-  "meta": {
-    "retrieved": 50,
-    "reranked": 20,
-    "returned": 8,
-    "latency_ms": 94.2,
-    "cache_hit": false,
-    "llm_used": false
-  }
-}
-```
-
-Debug timing:
-
-```text
-POST /api/v1/recommendations?debug=true
-```
-
-## Product
-
-```bash
-curl http://localhost:5000/api/v1/products/<PARENT_ASIN>
-```
-
-## Feedback
-
-```bash
-curl -X POST http://localhost:5000/api/v1/feedback \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "request_id": "req_...",
-    "product_id": "B012345678",
-    "feedback_type": "helpful"
-  }'
-```
+- Usage guide: [`docs/api.md`](docs/api.md)
+- Swagger UI: http://localhost:5000/api/docs
+- OpenAPI JSON: http://localhost:5000/api/openapi.json
 
 ---
 

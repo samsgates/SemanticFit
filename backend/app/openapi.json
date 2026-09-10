@@ -1,0 +1,300 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SemanticFit API",
+    "version": "1.0.0",
+    "description": "Semantic fashion recommendations, catalog access, feedback, and administration. Admin endpoints use a session cookie; protected write operations also require an X-CSRF-Token header."
+  },
+  "servers": [{"url": "/", "description": "Current server"}],
+  "tags": [
+    {"name": "Service"},
+    {"name": "Recommendations"},
+    {"name": "Products"},
+    {"name": "Feedback"},
+    {"name": "Admin authentication"},
+    {"name": "Admin"},
+    {"name": "Observability"}
+  ],
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": ["Service"], "summary": "Check service dependencies", "operationId": "getHealth",
+        "responses": {"200": {"description": "Dependency status", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/HealthResponse"}}}}}
+      }
+    },
+    "/api/v1/ready": {
+      "get": {
+        "tags": ["Service"], "summary": "Check model and vector-store readiness", "operationId": "getReadiness",
+        "responses": {
+          "200": {"description": "All required components are ready", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ReadinessResponse"}}}},
+          "503": {"description": "A required component is unavailable", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ReadinessResponse"}}}}
+        }
+      }
+    },
+    "/api/v1/recommendations": {
+      "post": {
+        "tags": ["Recommendations"], "summary": "Get semantic product recommendations", "operationId": "createRecommendations",
+        "description": "Searches the catalog using natural-language intent. Add debug=true to include stage timings.",
+        "parameters": [
+          {"name": "debug", "in": "query", "schema": {"type": "boolean", "default": false}},
+          {"$ref": "#/components/parameters/RequestId"},
+          {"$ref": "#/components/parameters/SessionId"}
+        ],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RecommendationRequest"}}}},
+        "responses": {
+          "200": {"description": "Ranked recommendations", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RecommendationResponse"}}}},
+          "400": {"$ref": "#/components/responses/BadRequest"},
+          "429": {"$ref": "#/components/responses/RateLimited"},
+          "503": {"$ref": "#/components/responses/ServiceUnavailable"}
+        }
+      }
+    },
+    "/api/v1/products/{parent_asin}": {
+      "get": {
+        "tags": ["Products"], "summary": "Get a product", "operationId": "getProduct",
+        "parameters": [{"name": "parent_asin", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {
+          "200": {"description": "Product details", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Product"}}}},
+          "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": ["Products"], "summary": "List the most common product categories", "operationId": "listCategories",
+        "responses": {"200": {"description": "Up to 100 categories", "content": {"application/json": {"schema": {"type": "object", "properties": {"categories": {"type": "array", "items": {"$ref": "#/components/schemas/CategoryCount"}}}}}}}}
+      }
+    },
+    "/api/v1/search/suggestions": {
+      "get": {
+        "tags": ["Recommendations"], "summary": "Get search suggestions", "operationId": "getSearchSuggestions",
+        "parameters": [{"name": "q", "in": "query", "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Suggestions", "content": {"application/json": {"schema": {"type": "object", "properties": {"suggestions": {"type": "array", "items": {"type": "string"}}}}}}}}
+      }
+    },
+    "/api/v1/feedback": {
+      "post": {
+        "tags": ["Feedback"], "summary": "Submit recommendation feedback", "operationId": "createFeedback",
+        "parameters": [{"$ref": "#/components/parameters/SessionId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/FeedbackRequest"}}}},
+        "responses": {
+          "201": {"description": "Feedback recorded", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreatedResponse"}}}},
+          "400": {"$ref": "#/components/responses/BadRequest"},
+          "404": {"description": "Feedback is disabled", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/api/v1/admin/login": {
+      "post": {
+        "tags": ["Admin authentication"], "summary": "Start an admin session", "operationId": "adminLogin",
+        "description": "Returns a CSRF token and sets the admin session cookie.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LoginRequest"}}}},
+        "responses": {
+          "200": {"description": "Authenticated", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LoginResponse"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "429": {"$ref": "#/components/responses/RateLimited"}
+        }
+      }
+    },
+    "/api/v1/admin/logout": {
+      "post": {
+        "tags": ["Admin authentication"], "summary": "End the admin session", "operationId": "adminLogout",
+        "security": [{"AdminSession": [], "CsrfToken": []}],
+        "responses": {
+          "200": {"description": "Logged out", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/OkResponse"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/session": {
+      "get": {
+        "tags": ["Admin authentication"], "summary": "Inspect the current admin session", "operationId": "getAdminSession",
+        "responses": {"200": {"description": "Session state", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SessionResponse"}}}}}
+      }
+    },
+    "/api/v1/admin/dashboard": {
+      "get": {
+        "tags": ["Admin"], "summary": "Get dashboard metrics", "operationId": "getAdminDashboard", "security": [{"AdminSession": []}],
+        "responses": {"200": {"$ref": "#/components/responses/ObjectResponse"}, "401": {"$ref": "#/components/responses/Unauthorized"}}
+      }
+    },
+    "/api/v1/admin/ingestion/jobs": {
+      "get": {
+        "tags": ["Admin"], "summary": "List ingestion jobs", "operationId": "listIngestionJobs", "security": [{"AdminSession": []}],
+        "responses": {
+          "200": {"description": "Recent ingestion jobs", "content": {"application/json": {"schema": {"type": "object", "properties": {"jobs": {"type": "array", "items": {"$ref": "#/components/schemas/IngestionJob"}}}}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"}
+        }
+      }
+    },
+    "/api/v1/admin/ingestion/jobs/{job_id}": {
+      "get": {
+        "tags": ["Admin"], "summary": "Get an ingestion job", "operationId": "getIngestionJob", "security": [{"AdminSession": []}],
+        "parameters": [{"name": "job_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {
+          "200": {"description": "Ingestion job", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/IngestionJob"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}
+        }
+      }
+    },
+    "/api/v1/admin/search-usage": {
+      "get": {
+        "tags": ["Admin"], "summary": "List recent search events", "operationId": "getSearchUsage", "security": [{"AdminSession": []}],
+        "parameters": [{"$ref": "#/components/parameters/Limit500"}],
+        "responses": {"200": {"$ref": "#/components/responses/ObjectResponse"}, "401": {"$ref": "#/components/responses/Unauthorized"}}
+      }
+    },
+    "/api/v1/admin/audit": {
+      "get": {
+        "tags": ["Admin"], "summary": "List audit log entries", "operationId": "listAuditLogs", "security": [{"AdminSession": []}],
+        "parameters": [
+          {"name": "event_type", "in": "query", "schema": {"type": "string"}},
+          {"name": "status", "in": "query", "schema": {"type": "string"}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 200}}
+        ],
+        "responses": {
+          "200": {"description": "Audit entries", "content": {"application/json": {"schema": {"type": "object", "properties": {"logs": {"type": "array", "items": {"$ref": "#/components/schemas/AuditLog"}}}}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"}
+        }
+      }
+    },
+    "/api/v1/admin/audit/export": {
+      "get": {
+        "tags": ["Admin"], "summary": "Export audit log entries", "operationId": "exportAuditLogs", "security": [{"AdminSession": []}],
+        "parameters": [{"name": "format", "in": "query", "schema": {"type": "string", "enum": ["csv", "json"], "default": "csv"}}],
+        "responses": {
+          "200": {"description": "CSV export or JSON audit entries", "content": {"text/csv": {"schema": {"type": "string"}}, "application/json": {"schema": {"type": "object", "properties": {"logs": {"type": "array", "items": {"$ref": "#/components/schemas/AuditLog"}}}}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"}
+        }
+      }
+    },
+    "/api/v1/admin/feedback": {
+      "get": {
+        "tags": ["Admin"], "summary": "List and summarize feedback", "operationId": "listAdminFeedback", "security": [{"AdminSession": []}],
+        "parameters": [{"name": "limit", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 1000, "default": 250}}],
+        "responses": {"200": {"$ref": "#/components/responses/ObjectResponse"}, "401": {"$ref": "#/components/responses/Unauthorized"}}
+      }
+    },
+    "/api/v1/admin/evaluations": {
+      "get": {
+        "tags": ["Admin"], "summary": "List evaluation runs", "operationId": "listEvaluations", "security": [{"AdminSession": []}],
+        "responses": {"200": {"$ref": "#/components/responses/ObjectResponse"}, "401": {"$ref": "#/components/responses/Unauthorized"}}
+      }
+    },
+    "/api/v1/admin/evaluations/{run_id}": {
+      "get": {
+        "tags": ["Admin"], "summary": "Get an evaluation run", "operationId": "getEvaluation", "security": [{"AdminSession": []}],
+        "parameters": [{"name": "run_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"$ref": "#/components/responses/ObjectResponse"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}}
+      }
+    },
+    "/api/v1/admin/system": {
+      "get": {
+        "tags": ["Admin"], "summary": "Get runtime system information", "operationId": "getAdminSystem", "security": [{"AdminSession": []}],
+        "responses": {"200": {"$ref": "#/components/responses/ObjectResponse"}, "401": {"$ref": "#/components/responses/Unauthorized"}}
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": ["Observability"], "summary": "Get Prometheus metrics", "operationId": "getMetrics",
+        "responses": {"200": {"description": "Prometheus text exposition", "content": {"text/plain": {"schema": {"type": "string"}}}}}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AdminSession": {"type": "apiKey", "in": "cookie", "name": "session", "description": "Session cookie set by POST /api/v1/admin/login."},
+      "CsrfToken": {"type": "apiKey", "in": "header", "name": "X-CSRF-Token", "description": "Token returned by admin login; required for protected non-GET requests."}
+    },
+    "parameters": {
+      "RequestId": {"name": "X-Request-ID", "in": "header", "description": "Optional caller-generated request identifier.", "schema": {"type": "string"}},
+      "SessionId": {"name": "X-Session-ID", "in": "header", "description": "Optional anonymous client session identifier.", "schema": {"type": "string"}},
+      "Limit500": {"name": "limit", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 500, "default": 100}}
+    },
+    "responses": {
+      "BadRequest": {"description": "Invalid request", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Unauthorized": {"description": "Admin authentication required", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Forbidden": {"description": "Invalid or missing CSRF token", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "NotFound": {"description": "Resource not found", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "RateLimited": {"description": "Rate limit exceeded", "headers": {"Retry-After": {"schema": {"type": "integer"}, "description": "Seconds before retrying."}}, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "ServiceUnavailable": {"description": "Service could not complete the request", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "ObjectResponse": {"description": "Successful response", "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true}}}}
+    },
+    "schemas": {
+      "Error": {
+        "type": "object", "required": ["error"],
+        "properties": {"error": {"type": "object", "required": ["code", "message"], "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "request_id": {"type": "string", "nullable": true}}}}
+      },
+      "HealthResponse": {
+        "type": "object", "required": ["status", "components"],
+        "properties": {"status": {"type": "string", "enum": ["healthy", "degraded"]}, "components": {"type": "object", "additionalProperties": {"type": "string"}}}
+      },
+      "ReadinessResponse": {
+        "type": "object", "required": ["ready", "embedding_model", "reranker", "qdrant"],
+        "properties": {"ready": {"type": "boolean"}, "embedding_model": {"type": "string"}, "reranker": {"type": "string"}, "qdrant": {"type": "string"}}
+      },
+      "SearchFilters": {
+        "type": "object",
+        "properties": {"min_price": {"type": "number", "minimum": 0}, "max_price": {"type": "number", "minimum": 0}, "min_rating": {"type": "number", "minimum": 0, "maximum": 5}, "category": {"type": "string"}, "store": {"type": "string"}}
+      },
+      "RecommendationRequest": {
+        "type": "object", "required": ["query"],
+        "properties": {
+          "query": {"type": "string", "minLength": 1, "maxLength": 1000, "example": "black formal dress for a summer wedding under $120"},
+          "limit": {"type": "integer", "minimum": 1, "example": 8}, "filters": {"$ref": "#/components/schemas/SearchFilters"}, "session_id": {"type": "string"}
+        }
+      },
+      "ProductSummary": {
+        "type": "object", "required": ["product_id", "parent_asin", "title", "rating_count", "categories", "score", "match_percent", "reason"],
+        "properties": {
+          "product_id": {"type": "string"}, "parent_asin": {"type": "string"}, "title": {"type": "string"}, "main_category": {"type": "string", "nullable": true},
+          "price": {"type": "number", "nullable": true}, "rating": {"type": "number", "nullable": true}, "rating_count": {"type": "integer"}, "store": {"type": "string", "nullable": true},
+          "categories": {"type": "array", "items": {"type": "string"}}, "image": {"type": "string", "nullable": true}, "thumbnail": {"type": "string", "nullable": true},
+          "score": {"type": "number"}, "match_percent": {"type": "integer", "minimum": 1, "maximum": 99}, "reason": {"type": "string"}, "score_breakdown": {"type": "object", "additionalProperties": {"type": "number"}}
+        }
+      },
+      "RecommendationResponse": {
+        "type": "object", "required": ["request_id", "query", "intent", "filters", "results", "meta"],
+        "properties": {
+          "request_id": {"type": "string"}, "query": {"type": "string"}, "intent": {"type": "object", "additionalProperties": true}, "filters": {"$ref": "#/components/schemas/SearchFilters"},
+          "results": {"type": "array", "items": {"$ref": "#/components/schemas/ProductSummary"}},
+          "meta": {"type": "object", "properties": {"retrieved": {"type": "integer"}, "reranked": {"type": "integer"}, "returned": {"type": "integer"}, "latency_ms": {"type": "number"}, "cache_hit": {"type": "boolean"}, "llm_used": {"type": "boolean"}}},
+          "debug": {"type": "object", "additionalProperties": {"type": "number"}}
+        }
+      },
+      "Product": {
+        "type": "object", "required": ["parent_asin", "title"],
+        "properties": {
+          "parent_asin": {"type": "string"}, "title": {"type": "string"}, "main_category": {"type": "string", "nullable": true}, "price": {"type": "number", "nullable": true},
+          "average_rating": {"type": "number", "nullable": true}, "rating_number": {"type": "integer"}, "features": {"type": "array", "items": {"type": "string"}},
+          "description": {"type": "array", "items": {"type": "string"}}, "images": {"type": "array", "items": {"type": "object", "additionalProperties": true}}, "videos": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+          "store": {"type": "string", "nullable": true}, "categories": {"type": "array", "items": {"type": "string"}}, "details": {"type": "object", "additionalProperties": true},
+          "bought_together": {"nullable": true}, "primary_image": {"type": "string", "nullable": true}, "thumbnail_image": {"type": "string", "nullable": true}
+        }
+      },
+      "CategoryCount": {"type": "object", "required": ["name", "count"], "properties": {"name": {"type": "string"}, "count": {"type": "integer"}}},
+      "FeedbackRequest": {
+        "type": "object", "required": ["request_id", "feedback_type"],
+        "properties": {
+          "request_id": {"type": "string"}, "product_id": {"type": "string"}, "session_id": {"type": "string"},
+          "feedback_type": {"type": "string", "enum": ["helpful", "not_relevant", "search_helpful", "search_partial", "search_not_helpful", "click", "detail_view"]},
+          "feedback_reason": {"type": "string"}, "details": {"type": "object", "additionalProperties": true}
+        }
+      },
+      "LoginRequest": {"type": "object", "required": ["username", "password"], "properties": {"username": {"type": "string"}, "password": {"type": "string", "format": "password"}}},
+      "LoginResponse": {"type": "object", "required": ["ok", "username", "csrf_token"], "properties": {"ok": {"type": "boolean"}, "username": {"type": "string"}, "csrf_token": {"type": "string"}}},
+      "SessionResponse": {"type": "object", "required": ["authenticated"], "properties": {"authenticated": {"type": "boolean"}, "username": {"type": "string", "nullable": true}, "csrf_token": {"type": "string", "nullable": true}}},
+      "OkResponse": {"type": "object", "required": ["ok"], "properties": {"ok": {"type": "boolean"}}},
+      "CreatedResponse": {"type": "object", "required": ["ok", "feedback_id"], "properties": {"ok": {"type": "boolean"}, "feedback_id": {"type": "integer"}}},
+      "IngestionJob": {
+        "type": "object", "required": ["id", "status"],
+        "properties": {"id": {"type": "string"}, "filename": {"type": "string"}, "status": {"type": "string"}, "file_size": {"type": "integer"}, "processed": {"type": "integer"}, "success": {"type": "integer"}, "skipped": {"type": "integer"}, "failed": {"type": "integer"}, "current_line": {"type": "integer"}, "progress_percent": {"type": "number"}, "rate_per_second": {"type": "number"}, "eta_seconds": {"type": "number", "nullable": true}, "stats": {"type": "object", "additionalProperties": true}, "error": {"type": "string", "nullable": true}, "started_at": {"type": "string", "format": "date-time", "nullable": true}, "updated_at": {"type": "string", "format": "date-time", "nullable": true}, "completed_at": {"type": "string", "format": "date-time", "nullable": true}}
+      },
+      "AuditLog": {
+        "type": "object",
+        "properties": {"id": {"type": "integer"}, "event_type": {"type": "string"}, "actor_type": {"type": "string", "nullable": true}, "actor_id": {"type": "string", "nullable": true}, "request_id": {"type": "string", "nullable": true}, "action": {"type": "string", "nullable": true}, "status": {"type": "string"}, "metadata": {"type": "object", "additionalProperties": true}, "created_at": {"type": "string", "format": "date-time", "nullable": true}}
+      }
+    }
+  }
+}

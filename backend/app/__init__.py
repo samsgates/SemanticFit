@@ -42,10 +42,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     )
 
     from .api.admin import admin_bp
+    from .api.docs import docs_bp
     from .api.public import public_bp
 
     app.register_blueprint(public_bp, url_prefix="/api/v1")
     app.register_blueprint(admin_bp, url_prefix="/api/v1/admin")
+    app.register_blueprint(docs_bp, url_prefix="/api")
 
     @app.before_request
     def before_request():
